@@ -25,4 +25,12 @@
             Console.WriteLine(body(i))
         Next
     End Sub
+
+    Public Function contains(index As Integer) As Boolean
+        Return body.Contains(index)
+    End Function
+
+    Public Function size() As Integer
+        Return body.Count
+    End Function
 End Class

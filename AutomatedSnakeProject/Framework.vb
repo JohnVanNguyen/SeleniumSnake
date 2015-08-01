@@ -1,15 +1,29 @@
 ﻿Imports OpenQA.Selenium
 
-Public Class Framework
-    Dim driver As IWebDriver
+Public Module Framework
+    Dim driver As New Firefox.FirefoxDriver()
     Dim pixel
-    Public Sub New(url As String)
-        driver = New Firefox.FirefoxDriver()
+    Dim score As IWebElement
+    Dim direction As IWebElement
+
+    Public Sub FrameworkUrl(url As String)
         driver.Url = url
         pixel = driver.FindElements(By.Name("pixel"))
+        score = driver.FindElement(By.Name("score"))
+        direction = driver.FindElement(By.Name("direc"))
     End Sub
 
-    Public Sub FrameworkUpdater(index As Integer)
+    Public Sub FrameworkMapUpdater(index As Integer)
         pixel.Item(index).Click()
     End Sub
-End Class
+
+    Public Sub FrameworkScoreUpdater(p_score As Integer)
+        score.Clear()
+        score.SendKeys(p_score)
+    End Sub
+
+    Public Sub FrameworkDirectionUpdater(p_direction As String)
+        direction.Clear()
+        direction.SendKeys(p_direction)
+    End Sub
+End Module

@@ -3,38 +3,84 @@ Imports System.Collections.ObjectModel
 
 Public Module Map
 
-    Public Sub MapGenerator(framework As Framework, size As Integer)
+    Public Sub MapGenerator(size As Integer)
         '   Generates the walls of the map making sure the ceiling
         '   and walls are filled in
-        Dim flag As Boolean
-
         For row As Integer = 0 To (size - 1)
             For col As Integer = 0 To (size - 1)
-                flag = False
-                '   If on ceiling, pixel must be checked
-                If row = 0 Or row = (size - 1) Then
-                    flag = True
-                End If
-                '   If on walls, pixel must be checked
-                If col = 0 Or col = (size - 1) Then
-                    flag = True
-                End If
-                If flag = True Then
-                    framework.FrameworkUpdater(RowColToIndex(row, col, size))
+                If IsWallIndex(row, col, size) = True Then
+                    FrameworkMapUpdater(RowColToIndex(row, col, size))
                 End If
             Next
         Next
     End Sub
 
+    Private Function IsWallIndex(row As Integer, col As Integer, size As Integer) As Boolean
+        '   If on ceiling
+        If row = 0 Or row = (size - 1) Then
+            Return True
+        End If
+        '   If on walls
+        If col = 0 Or col = (size - 1) Then
+            Return True
+        End If
+        Return False
+    End Function
+
     Public Sub MapUpdator(pixel As ReadOnlyCollection(Of OpenQA.Selenium.IWebElement), index As Integer)
-        'clicks or unclicks a checkbox at a certain index
+        '   clicks or unclicks a checkbox at a certain index
         pixel.Item(index).Click()
     End Sub
 
-    Public Function FruitGenerator() As Integer
-        '   returns the index of the fruit
-        '   also makes sure not to generate fruit on top of snake
-        Return 0
+    Public Function RandomSnakeGenerator(size As Integer) As Integer
+        '   returns the index of the randomly generated item
+        '   If an index is passed in, try to randomly generate without interfering
+        '   incoming index
+        Dim row, col As Integer
+        Dim index
+        '   Makes sure the call to Rnd() returns a truly random value
+        Randomize()
+        Do
+            '   Magic randomizer I got online but changed to -1 because
+            '   testing it shows good results
+            index = CInt(Math.Ceiling(Rnd() * (size * size))) - 1
+            '   if index generated is on ceiling or floor
+            IndexToRowCol(index, row, col, size)
+            '   If the index is on a wall, run the loop again
+        Loop While IsWallIndex(row, col, size) = True
+        Return index
+    End Function
+
+    Public Function RandomFruitGenerator(size As Integer, snake As Snake) As Integer
+        '   WARNING, stays in a loop if all checkboxes are filled in by snake
+        '   such that a fruit cannot be spawned if a snake is on all area
+        '   Make sure to check if snake is at max size before entering
+
+        '   returns the index of the randomly generated item
+        '   If an index is passed in, try to randomly generate without interfering
+        '   incoming index
+        Dim row, col As Integer
+        Dim index
+        Dim flag As Boolean
+        '   Makes sure the call to Rnd() returns a truly random value
+        Randomize()
+        Do
+            '   Magic randomizer I got online but changed to -1 because
+            '   testing it shows good results
+            index = CInt(Math.Ceiling(Rnd() * (size * size))) - 1
+
+            '   Sees if index already exists on a snake's body
+            flag = snake.contains(index)
+
+            '   if it's not on snake body, check to see if it's
+            '   on a wall
+            If flag = False Then
+                IndexToRowCol(index, row, col, size)
+                '   checks to see if it is on wall
+                flag = IsWallIndex(row, col, size)
+            End If
+        Loop While flag = True
+        Return index
     End Function
 
     Public Function RowColToIndex(row As Integer, col As Integer, size As Integer) As Integer
@@ -56,10 +102,5 @@ Public Module Map
             col = index
         End While
     End Sub
-
-    Public Function IndexOfInsideWalls(index As Integer, size As Integer) As Integer
-        '   Move one down from ceiling and one over from left wall
-        Return index + size + 1
-    End Function
 
 End Module
